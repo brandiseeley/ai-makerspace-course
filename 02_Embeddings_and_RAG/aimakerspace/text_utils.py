@@ -1,35 +1,47 @@
 import os
+import csv
+import re
 from typing import List
 
 
-class TextFileLoader:
+class CSVFileLoader:
     def __init__(self, path: str, encoding: str = "utf-8"):
         self.documents = []
         self.path = path
         self.encoding = encoding
 
     def load(self):
-        if os.path.isdir(self.path):
-            self.load_directory()
-        elif os.path.isfile(self.path) and self.path.endswith(".txt"):
-            self.load_file()
-        else:
-            raise ValueError(
-                "Provided path is neither a valid directory nor a .txt file."
-            )
+        if not os.path.isfile(self.path) or not self.path.endswith(".csv"):
+            raise ValueError("Provided path is not a valid .csv file.")
+        
+        self.load_file()
+
+    def parse_wkt(self, wkt: str):
+        # Example WKT: "POINT (-84.2484845 34.5581409)"
+        match = re.match(r"POINT \((-?\d+\.\d+) (-?\d+\.\d+)\)", wkt)
+        if match:
+            lon, lat = match.groups()
+            return float(lat), float(lon)
+        return None, None
 
     def load_file(self):
         with open(self.path, "r", encoding=self.encoding) as f:
-            self.documents.append(f.read())
-
-    def load_directory(self):
-        for root, _, files in os.walk(self.path):
-            for file in files:
-                if file.endswith(".txt"):
-                    with open(
-                        os.path.join(root, file), "r", encoding=self.encoding
-                    ) as f:
-                        self.documents.append(f.read())
+            reader = csv.DictReader(f)
+            for row in reader:
+                name = row.get("name", "").strip()
+                description = row.get("description", "").strip()
+                wkt = row.get("WKT", "").strip()
+                lat, lon = self.parse_wkt(wkt)
+                if name or description:
+                    document = {
+                        "text": f"Location: {name}\nDescription: {description}",
+                        "name": name,
+                        "description": description,
+                        "wkt": wkt,
+                        "latitude": lat,
+                        "longitude": lon
+                    }
+                    self.documents.append(document)
 
     def load_documents(self):
         self.load()
@@ -60,18 +72,3 @@ class CharacterTextSplitter:
         for text in texts:
             chunks.extend(self.split(text))
         return chunks
-
-
-if __name__ == "__main__":
-    loader = TextFileLoader("data/KingLear.txt")
-    loader.load()
-    splitter = CharacterTextSplitter()
-    chunks = splitter.split_texts(loader.documents)
-    print(len(chunks))
-    print(chunks[0])
-    print("--------")
-    print(chunks[1])
-    print("--------")
-    print(chunks[-2])
-    print("--------")
-    print(chunks[-1])
