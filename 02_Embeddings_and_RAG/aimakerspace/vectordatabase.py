@@ -42,10 +42,18 @@ class VectorDatabase:
         k: int,
         distance_measure: Callable = cosine_similarity,
         return_as_text: bool = False,
-    ) -> List[Tuple[str, float]]:
+        include_metadata: bool = False,
+    ) -> List[Tuple[str, float]] | List[Tuple[Dict[str, Any], float]]:
         query_vector = self.embedding_model.get_embedding(query_text)
         results = self.search(query_vector, k, distance_measure)
-        return [result[0] for result in results] if return_as_text else results
+        
+        if return_as_text:
+            return [result[0] for result in results]
+        elif include_metadata:
+            # Return metadata along with scores
+            return [(self.metadata.get(key, {}), score) for key, score in results]
+        else:
+            return results
 
     def retrieve_from_key(self, key: str) -> np.array:
         return self.vectors.get(key, None)
