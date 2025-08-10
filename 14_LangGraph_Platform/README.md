@@ -53,10 +53,39 @@ Run the repository and complete the following:
 
 What is the purpose of the `chunk_overlap` parameter when using `RecursiveCharacterTextSplitter` to prepare documents for RAG, and what trade-offs arise as you increase or decrease its value?
 
+##### ✅ Answer:
+
+The `chunk_overlap` parameter controls how much text is shared between consecutive chunks when splitting documents.
+
+When this number is higher (more overlap), our chance of losing some context decreases as the context will more likely be preserved in at least one of the two consecutive chunks. That said, this creates more redundancy. It may result in retrieving two chunks for the same content, omitting another chunk that would've provided better variety. Finally, of course this takes up more memory.
+
+With a lower number (less overlap) we save space, but risk losing context at the boundaries of chunks.
+
+In reality, the decision is highly dependent on the type of documents you're using.
+
+
+---
+
 #### ❓ Question:
 
 Your retriever is configured with `search_kwargs={"k": 5}`. How would adjusting `k` likely affect RAGAS metrics such as Context Precision and Context Recall in practice, and why?
 
+##### ✅ Answer:
+
+Adjusting `k` will change the number of chunks that we retrieve. Considering we're within relatively normal bounds:
+
+- Increasing `k` would improve context recall. Out of all the chunks we retrieve, it's likely we'll get more 'ground truth' in them if we retrieve more. On the flip side, context precision would likely **decrease**. More chunks means more-less-relevant chunks, so the number of them that are relevant will decrease.
+
+- Decreasing `k` has the oposite effect. With a small `k`, it's likely that *all* chunks are relevant (high context precision), but we'd miss out on some relevant content, meaning lower context recall.
+
+---
+
 #### ❓ Question:
 
 Compare the `agent` and `agent_helpful` assistants defined in `langgraph.json`. Where does the helpfulness evaluator fit in the graph, and under what condition should execution route back to the agent vs. terminate?
+
+##### ✅ Answer:
+
+The `agent` is a very basic tool-using agent that terminates as soon as a tool hasn't been called. It's only decision to make is to call a tool or not, based on if we have the information we need.
+
+The `agent_helpful`, on the other hand, has an additional node that evaluates whether or not a response is helpful based on the original query and the final response. The basic routing is that the agent decides if a tool should be used, executes the tool if so, keep going until no tool needed, send to helpfulness evaluation, if the response is yes, terminate, if it's not, go back to the agent to retry the response.
