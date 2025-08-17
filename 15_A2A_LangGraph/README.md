@@ -87,9 +87,26 @@ Do this by creating a Simple Agent that can make API calls to the 🤖Agent Node
 
 What are the core components of an `AgentCard`?
 
+##### ✅ Answer:
+
+At a high level, an `AgentCard` is an advertisement of the capabilities of an agent. Other agents can read this card to see what it does and decide if and how to use it. The main parts are:
+
+- `name`. It's a string. It's the name.
+- `description`. It's a string. It's the description. Still pretty simple.
+- `url`. This is the URL at which we can access the agent.
+- `version`. The version of the agent.
+- `default_input_modes`. Similar to a `Content-Type` header in HTTP, this is telling us what formats we can send stuff to our agent in.
+- `default_output_nodes`. Same as above, except it's what we can expect from the agent.
+- `capabilties`. Some miscellaneous tasks that the agent may or may not be capable of, like streaming.
+- `skills`. A list of `AgentSkill` objects. These are basically the tools that the agent itself uses, kind of. It's what we're advertizing as the skills our agent can do, and might not directly align with the actual tools our agents is using, as we're creating an abstraction.
+
 ### ❓ Question #2:
 
 Why is A2A (and other such protocols) important in your own words?
+
+##### ✅ Answer:
+
+Just like at the beginning of the internet when we realized we needed something like HTTP, we're at an era where everyone and their dog is implementing agents. We need a way for us and our dogs to interact (communicate) between each other cleanly. We _could_ build from the ground up every time we want to talk between agents, we don't _need_ this protocol, but if enough of us are requiring this type of communication, we might as well agree on a protocol so that we don't have to communicate about it as much or build as much ground-up code.
 
 ### 🚧 Advanced Build:
 
